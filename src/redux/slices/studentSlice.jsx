@@ -1,7 +1,8 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getLocalStorage, setLocalStorage } from "../../help/localStorage";
 
 const initialState = {
-    listStudent: [],
+    listStudent: getLocalStorage("listStudent", []),
 };
 
 const studentSlice = createSlice({
@@ -14,6 +15,7 @@ const studentSlice = createSlice({
             });
             if (index === -1) {
                 state.listStudent.push(payload);
+                setLocalStorage("listStudent", state.listStudent)
             }
         },
         deleteStudent: (state, { type, payload }) => {
@@ -21,15 +23,18 @@ const studentSlice = createSlice({
             state.listStudent = state.listStudent.filter((item) => {
                 return +item.id !== +payload.id;
             });
+            setLocalStorage("listStudent", state.listStudent)
+
         },
-        editStudent: (state, {type, payload}) => { 
+        editStudent: (state, { type, payload }) => {
             console.log(payload);
 
             const index = state.listStudent.findIndex((item) => payload.id === item.id);
             if (index !== -1) {
-                state.listStudent[index] = payload
+                state.listStudent[index] = payload;
             }
-         }
+            setLocalStorage("listStudent", state.listStudent)
+        },
     },
 });
 

@@ -1,30 +1,46 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Popconfirm, Space, Table, Tooltip, Typography } from "antd";
+import {
+    Button,
+    Form,
+    Input,
+    Popconfirm,
+    Space,
+    Table,
+    Tooltip,
+    Typography,
+    message,
+    ConfigProvider,
+    theme,
+} from "antd";
 import Highlighter from "react-highlight-words";
 import { deleteStudent, editStudent } from "../../redux/slices/studentSlice";
-
-
-const wait = function (seconds) {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, seconds);
-    });
+let messageApi = "";
+const MessageWrapper = () => {
+    const [getmessageApi, contextHolder] = message.useMessage();
+    messageApi = getmessageApi;
+    return <>{contextHolder}</>;
 };
+
+// let form = "";
+// const FormWrapper = ({children}) => {
+//     const [formUse] = Form.useForm();
+//     form = formUse;
+//     return <>{children}</>;
+// };
+
 class ListStudent extends Component {
-    formRef = React.createRef(); // Tạo ref cho Form
     state = {
         searchText: "",
         searchedColumn: "",
         editingKey: "",
         values: {
-            id: "",
-            name: "",
+            name: "long",
             phoneNumber: "",
             email: "",
         },
         errors: {
-            id: "",
             name: "",
             phoneNumber: "",
             email: "",
@@ -36,12 +52,11 @@ class ListStudent extends Component {
         console.log({ name, value });
         let error = "";
 
-
         // phoneNumber
         if (name === "phoneNumber") {
-            const reg = /^\d+$/;
+            const reg = /^\d{10,}$/;
             if (!reg.test(value)) {
-                error = `phải là số`;
+                error = `Số điện thoại phải gồm 10 chữ số`;
             }
             if (reg.test(value)) {
                 error = ``;
@@ -56,7 +71,7 @@ class ListStudent extends Component {
                 error = ``;
             }
             if (!nameRegex.test(value)) {
-                error = `phải là chữ`;
+                error = `Trường này chỉ bao gồm chữ`;
             }
         }
 
@@ -64,7 +79,7 @@ class ListStudent extends Component {
         if (name === "email") {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(value)) {
-                error = `phải email`;
+                error = `Trường này phải email`;
             }
             if (emailRegex.test(value)) {
                 error = ``;
@@ -81,7 +96,7 @@ class ListStudent extends Component {
                 errors: { ...this.state.errors, [name]: error },
             },
             () => {
-                // console.log(this.state);
+                console.log(this.state);
             }
         );
     };
@@ -118,11 +133,11 @@ class ListStudent extends Component {
         );
     };
     render() {
-        const formRef = this.formRef;
-        const { current: form } = formRef;
+        // const formRef = React.createRef();
+        // const { current: form } = formRef;
+        console.log(this.props);
         const { searchText, searchedColumn, editingKey } = this.state;
-        const { listStudent } = this.props;
-        const { dispatch } = this.props;
+        const {dispatch, listStudent, form } = this.props;
         const setSearchText = (data) => {
             this.setState({
                 searchText: data,
@@ -134,32 +149,59 @@ class ListStudent extends Component {
             });
         };
         const setEditingKey = (data) => {
+            console.log(data);
             this.setState({
                 editingKey: data,
             });
         };
-        const isEditing = (record) => record.key === editingKey;
+        const isEditing = (record) => record.id === editingKey;
         const edit = (record) => {
             form.setFieldsValue({
-                id: "",
                 name: "",
                 phoneNumber: "",
                 email: "",
                 ...record,
             });
-            setEditingKey(record.key);
+            const { name, phoneNumber, email } = record;
+            this.setState(
+                {
+                    values: { ...this.state.values, name, phoneNumber, email },
+                },
+                () => {
+                    // console.log(this.state);
+                }
+            );
+            setEditingKey(record.id);
         };
         const cancel = () => {
             setEditingKey("");
         };
 
         const save = async (record) => {
+            const { values, errors } = this.state;
+            console.log({ values, errors });
+            let isValid = true;
+            for (const key in values) {
+                if (values[key] === "" || errors[key] !== "") {
+                    isValid = false;
+                }
+            }
+
+            if (!isValid) {
+                return console.log("không cho submit");
+            }
+            console.log("submit");
+
             const { id } = record;
             let newData = await form.validateFields();
             newData = { ...newData, id };
             dispatch(editStudent(newData));
             // await wait(1000);
             setEditingKey("");
+            messageApi.open({
+                type: "success",
+                content: "Lưu thay đổi thành công",
+            });
         };
 
         const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -311,17 +353,30 @@ class ListStudent extends Component {
                     const editable = isEditing(record);
                     return editable ? (
                         <span>
+                            <Popconfirm
+                                okText="Lưu"
+                                cancelText="Không"
+                                title="Bạn có chắc muốn lưu những gì đã thay đổi?"
+                                onConfirm={() => {
+                                    save(record);
+                                }}
+                            >
+                                <Typography.Link
+                                    style={{
+                                        marginRight: 8,
+                                    }}
+                                >
+                                    Lưu
+                                </Typography.Link>
+                            </Popconfirm>
                             <Typography.Link
-                                onClick={() => save(record)}
+                                onClick={cancel}
                                 style={{
                                     marginRight: 8,
                                 }}
                             >
-                                Save
+                                Huỷ
                             </Typography.Link>
-                            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-                                <a>Cancel</a>
-                            </Popconfirm>
                         </span>
                     ) : (
                         <Space>
@@ -337,7 +392,9 @@ class ListStudent extends Component {
                                 okText="Xoá"
                                 cancelText="Không"
                                 title="Bạn có chắc muốn xoá?"
-                                onConfirm={() => dispatch(deleteStudent(record))}
+                                onConfirm={() => {
+                                    dispatch(deleteStudent(record));
+                                }}
                             >
                                 <Tooltip placement="right" title="Xoá">
                                     <Button
@@ -369,7 +426,9 @@ class ListStudent extends Component {
             };
         });
         return (
-            <Form ref={formRef} component={false}>
+            <Form form={form}  component={false}>
+                <MessageWrapper />
+
                 <Table
                     rowKey="id"
                     columns={mergedColumns}

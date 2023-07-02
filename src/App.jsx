@@ -2,6 +2,7 @@ import { Space } from "antd";
 import "./App.css";
 import FormStudent from "./components/FormStudent/FormStudent";
 import ListStudent from "./components/ListStudent/ListStudent";
+import FormWarper from "./components/ListStudent/FormWarper";
 
 function App() {
     return (
@@ -9,7 +10,8 @@ function App() {
             <h1 className="text-center ">Quản Lý Sinh Viên</h1>
             <Space direction="vertical" style={{width: "100%"}} size={"large"}>
                 <FormStudent />
-                <ListStudent />
+                {/* <ListStudent /> */}
+                <FormWarper />
             </Space>
         </div>
     );

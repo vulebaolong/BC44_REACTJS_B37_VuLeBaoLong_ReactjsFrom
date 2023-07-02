@@ -1,9 +1,14 @@
-import { Button, Card, Col, Form, Input, Row, Space } from "antd";
-import { connect } from 'react-redux';
+import { Button, Card, Col, Form, Input, Row, Space, message } from "antd";
+import { connect } from "react-redux";
 import React, { Component } from "react";
 import { ContactsOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { addStudent } from "../../redux/slices/studentSlice";
-
+let messageApi = "";
+const MessageWrapper = () => {
+    const [getmessageApi, contextHolder] = message.useMessage();
+    messageApi = getmessageApi;
+    return <>{contextHolder}</>;
+};
 class FormStudent extends Component {
     state = {
         values: {
@@ -18,27 +23,32 @@ class FormStudent extends Component {
             phoneNumber: "",
             email: "",
         },
+        trigger: false,
     };
-    onChange = (e) => {
-        const { name, value } = e.target;
+    validate = (name, value) => {
         let error = "";
 
         // id
         if (name === "id") {
+            const index = this.props.listStudent.findIndex((item) => {
+                console.log();
+                return item.id === value;
+            });
+            if (index !== -1) {
+                error = `Mã sinh viên đã tồn tại`;
+            }
+
             const reg = /^\d+$/;
             if (!reg.test(value)) {
-                error = `${name} phải là số`;
-            }
-            if (reg.test(value)) {
-                error = ``;
+                error = `Mã sinh viên phải là số`;
             }
         }
 
         // phoneNumber
         if (name === "phoneNumber") {
-            const reg = /^\d+$/;
+            const reg = /^\d{10,}$/;
             if (!reg.test(value)) {
-                error = `phải là số`;
+                error = `phải gồm 10 chữ số`;
             }
             if (reg.test(value)) {
                 error = ``;
@@ -72,6 +82,13 @@ class FormStudent extends Component {
             error = `không được để trống`;
         }
 
+        return error;
+    };
+    onChange = (e) => {
+        const { name, value } = e.target;
+
+        const error = this.validate(name, value);
+
         this.setState(
             {
                 values: { ...this.state.values, [name]: value },
@@ -82,27 +99,58 @@ class FormStudent extends Component {
             }
         );
     };
+    messageNoti = (type, content) => {
+        messageApi.open({
+            type,
+            content,
+        });
+    };
+
     onSubmit = (e) => {
-      e.preventDefault()
-      const {dispatch} = this.props
-      const { values, errors } = this.state;
-      let isValid = true;
+        e.preventDefault();
+        const { dispatch } = this.props;
+        const { values, errors } = this.state;
+        console.log({ values, errors });
 
-      for (const key in values) {
-          if (values[key] === "" || errors[key] !== "") {
-              isValid = false;
-          }
-      }
+        //TRIGGER
+        let newError = {};
+        for (const key in values) {
+            const error = this.validate(key, values[key]);
+            newError = { ...newError, [key]: error };
+        }
+        this.setState({
+            errors: {
+                ...newError,
+            },
+        });
 
-      if (!isValid) {
-          return console.log("không cho submit");
-      }
-      console.log("submit");
-      dispatch(addStudent(values))
+        let isValid = true;
+        for (const key in values) {
+            if (values[key] === "" || newError[key] !== "") {
+                isValid = false;
+            }
+        }
+
+        if (!isValid) {
+            this.messageNoti("warning", "Vui lòng hoàn thành các trường");
+            return console.log("không cho submit");
+        }
+
+        console.log("submit");
+        dispatch(addStudent(values));
+        this.setState({
+            values: {
+                id: "",
+                name: "",
+                phoneNumber: "",
+                email: "",
+            },
+        });
     };
     render() {
         return (
-            <div >
+            <div>
+                <MessageWrapper />
                 <Card
                     title="Thông tin sinh viên"
                     bordered={false}
@@ -129,6 +177,7 @@ class FormStudent extends Component {
                                             prefix={<ContactsOutlined />}
                                             onChange={this.onChange}
                                             name="id"
+                                            value={this.state.values.id}
                                         />
                                     </Form.Item>
 
@@ -151,6 +200,7 @@ class FormStudent extends Component {
                                             prefix={<PhoneOutlined />}
                                             name="phoneNumber"
                                             onChange={this.onChange}
+                                            value={this.state.values.phoneNumber}
                                         />
                                     </Form.Item>
                                 </Space>
@@ -175,6 +225,7 @@ class FormStudent extends Component {
                                             prefix={<UserOutlined />}
                                             name="name"
                                             onChange={this.onChange}
+                                            value={this.state.values.name}
                                         />
                                     </Form.Item>
                                     <Form.Item
@@ -195,6 +246,7 @@ class FormStudent extends Component {
                                             prefix={<UserOutlined />}
                                             name="email"
                                             onChange={this.onChange}
+                                            value={this.state.values.email}
                                         />
                                     </Form.Item>
                                 </Space>
@@ -209,8 +261,9 @@ class FormStudent extends Component {
         );
     }
 }
+const mapStateToProps = (state) => {
+    const { listStudent } = state.studentSlice;
+    return { listStudent };
+};
 
-
-
-
-export default connect()(FormStudent)
+export default connect(mapStateToProps)(FormStudent);
