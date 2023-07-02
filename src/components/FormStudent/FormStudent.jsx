@@ -31,7 +31,6 @@ class FormStudent extends Component {
         // id
         if (name === "id") {
             const index = this.props.listStudent.findIndex((item) => {
-                console.log();
                 return item.id === value;
             });
             if (index !== -1) {
@@ -95,7 +94,7 @@ class FormStudent extends Component {
                 errors: { ...this.state.errors, [name]: error },
             },
             () => {
-                console.log(this.state);
+                // console.log(this.state);
             }
         );
     };
@@ -110,7 +109,6 @@ class FormStudent extends Component {
         e.preventDefault();
         const { dispatch } = this.props;
         const { values, errors } = this.state;
-        console.log({ values, errors });
 
         //TRIGGER
         let newError = {};
@@ -133,10 +131,11 @@ class FormStudent extends Component {
 
         if (!isValid) {
             this.messageNoti("warning", "Vui lòng hoàn thành các trường");
-            return console.log("không cho submit");
+            // console.log("không cho submit");
+            return;
         }
 
-        console.log("submit");
+        // console.log("submit");
         dispatch(addStudent(values));
         this.setState({
             values: {
@@ -173,6 +172,7 @@ class FormStudent extends Component {
                                         <label className="mb-2">Mã sinh viên: </label>
                                         <Input
                                             placeholder="1"
+                                            tabIndex="1"
                                             size="large"
                                             prefix={<ContactsOutlined />}
                                             onChange={this.onChange}
@@ -195,6 +195,7 @@ class FormStudent extends Component {
                                     >
                                         <label className="mb-2">Số điện thoại:</label>
                                         <Input
+                                            tabIndex="3"
                                             placeholder="0999999999"
                                             size="large"
                                             prefix={<PhoneOutlined />}
@@ -220,6 +221,7 @@ class FormStudent extends Component {
                                         <label className="mb-2">Họ tên:</label>
                                         <Input
                                             placeholder="Nguyễn Văn A"
+                                            tabIndex="2"
                                             id="error"
                                             size="large"
                                             prefix={<UserOutlined />}
@@ -241,6 +243,7 @@ class FormStudent extends Component {
                                         <label className="mb-2">Email: </label>
                                         <Input
                                             placeholder="example@gmail.com"
+                                            tabIndex="4"
                                             id="error"
                                             size="large"
                                             prefix={<UserOutlined />}

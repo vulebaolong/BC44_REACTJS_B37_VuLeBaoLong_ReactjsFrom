@@ -19,7 +19,6 @@ const studentSlice = createSlice({
             }
         },
         deleteStudent: (state, { type, payload }) => {
-            console.log(payload);
             state.listStudent = state.listStudent.filter((item) => {
                 return +item.id !== +payload.id;
             });
@@ -27,7 +26,6 @@ const studentSlice = createSlice({
 
         },
         editStudent: (state, { type, payload }) => {
-            console.log(payload);
 
             const index = state.listStudent.findIndex((item) => payload.id === item.id);
             if (index !== -1) {

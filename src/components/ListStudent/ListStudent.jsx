@@ -49,7 +49,6 @@ class ListStudent extends Component {
     searchInput = React.createRef(null);
     onChange = (e) => {
         const { name, value } = e.target;
-        console.log({ name, value });
         let error = "";
 
         // phoneNumber
@@ -96,7 +95,7 @@ class ListStudent extends Component {
                 errors: { ...this.state.errors, [name]: error },
             },
             () => {
-                console.log(this.state);
+                // console.log(this.state);
             }
         );
     };
@@ -133,9 +132,6 @@ class ListStudent extends Component {
         );
     };
     render() {
-        // const formRef = React.createRef();
-        // const { current: form } = formRef;
-        console.log(this.props);
         const { searchText, searchedColumn, editingKey } = this.state;
         const {dispatch, listStudent, form } = this.props;
         const setSearchText = (data) => {
@@ -179,7 +175,6 @@ class ListStudent extends Component {
 
         const save = async (record) => {
             const { values, errors } = this.state;
-            console.log({ values, errors });
             let isValid = true;
             for (const key in values) {
                 if (values[key] === "" || errors[key] !== "") {
@@ -188,15 +183,14 @@ class ListStudent extends Component {
             }
 
             if (!isValid) {
-                return console.log("không cho submit");
+                // console.log("không cho submit")
+                return ;
             }
-            console.log("submit");
-
+            // console.log("submit");
             const { id } = record;
             let newData = await form.validateFields();
             newData = { ...newData, id };
             dispatch(editStudent(newData));
-            // await wait(1000);
             setEditingKey("");
             messageApi.open({
                 type: "success",
@@ -410,7 +404,6 @@ class ListStudent extends Component {
             },
         ];
         const mergedColumns = columns.map((col) => {
-            console.log(col);
             if (!col.editable) {
                 return col;
             }
