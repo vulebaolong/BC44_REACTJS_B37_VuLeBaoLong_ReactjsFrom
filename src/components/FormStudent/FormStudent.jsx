@@ -118,8 +118,8 @@ class FormStudent extends Component {
                                         }
                                         help={
                                             this.state.errors.id !== ""
-                                                ? `ID ${this.state.errors.id}`
-                                                : ""
+                                                ? `* ID ${this.state.errors.id}`
+                                                : "*"
                                         }
                                     >
                                         <label className="mb-2">Mã sinh viên: </label>
@@ -140,8 +140,8 @@ class FormStudent extends Component {
                                         }
                                         help={
                                             this.state.errors.phoneNumber !== ""
-                                                ? `Số điện thoại ${this.state.errors.phoneNumber}`
-                                                : ""
+                                                ? `* Số điện thoại ${this.state.errors.phoneNumber}`
+                                                : "*"
                                         }
                                     >
                                         <label className="mb-2">Số điện thoại:</label>
@@ -163,8 +163,8 @@ class FormStudent extends Component {
                                         }
                                         help={
                                             this.state.errors.name !== ""
-                                                ? `Họ tên ${this.state.errors.name}`
-                                                : ""
+                                                ? `* Họ tên ${this.state.errors.name}`
+                                                : "*"
                                         }
                                     >
                                         <label className="mb-2">Họ tên:</label>
@@ -183,8 +183,8 @@ class FormStudent extends Component {
                                         }
                                         help={
                                             this.state.errors.email !== ""
-                                                ? `Email ${this.state.errors.email}`
-                                                : ""
+                                                ? `* Email ${this.state.errors.email}`
+                                                : "*"
                                         }
                                     >
                                         <label className="mb-2">Email: </label>

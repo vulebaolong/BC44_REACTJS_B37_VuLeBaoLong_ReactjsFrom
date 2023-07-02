@@ -1,45 +1,127 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { DeleteOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Popconfirm, Space, Table, Tooltip } from "antd";
+import { Button, Form, Input, Popconfirm, Space, Table, Tooltip, Typography } from "antd";
 import Highlighter from "react-highlight-words";
-import { deleteStudent } from "../../redux/slices/studentSlice";
-// const data = [
-//     {
-//         key: "1",
-//         name: "John Brown",
-//         age: 32,
-//         address: "New York No. 1 Lake Park",
-//     },
-//     {
-//         key: "2",
-//         name: "Joe Black",
-//         age: 42,
-//         address: "London No. 1 Lake Park",
-//     },
-//     {
-//         key: "3",
-//         name: "Jim Green",
-//         age: 32,
-//         address: "Sydney No. 1 Lake Park",
-//     },
-//     {
-//         key: "4",
-//         name: "Jim Red",
-//         age: 32,
-//         address: "London No. 2 Lake Park",
-//     },
-// ];
+import { deleteStudent, editStudent } from "../../redux/slices/studentSlice";
+
+
+const wait = function (seconds) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, seconds);
+    });
+};
 class ListStudent extends Component {
     formRef = React.createRef(); // Tạo ref cho Form
     state = {
         searchText: "",
         searchedColumn: "",
+        editingKey: "",
+        values: {
+            id: "",
+            name: "",
+            phoneNumber: "",
+            email: "",
+        },
+        errors: {
+            id: "",
+            name: "",
+            phoneNumber: "",
+            email: "",
+        },
     };
     searchInput = React.createRef(null);
+    onChange = (e) => {
+        const { name, value } = e.target;
+        console.log({ name, value });
+        let error = "";
 
+
+        // phoneNumber
+        if (name === "phoneNumber") {
+            const reg = /^\d+$/;
+            if (!reg.test(value)) {
+                error = `phải là số`;
+            }
+            if (reg.test(value)) {
+                error = ``;
+            }
+        }
+
+        // name
+        if (name === "name") {
+            const nameRegex = /^[\p{L}\s]+$/u;
+
+            if (nameRegex.test(value)) {
+                error = ``;
+            }
+            if (!nameRegex.test(value)) {
+                error = `phải là chữ`;
+            }
+        }
+
+        // email
+        if (name === "email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                error = `phải email`;
+            }
+            if (emailRegex.test(value)) {
+                error = ``;
+            }
+        }
+
+        if (value.trim() === "") {
+            error = `không được để trống`;
+        }
+
+        this.setState(
+            {
+                values: { ...this.state.values, [name]: value },
+                errors: { ...this.state.errors, [name]: error },
+            },
+            () => {
+                // console.log(this.state);
+            }
+        );
+    };
+    EditableCell = ({
+        editing,
+        dataIndex,
+        title,
+        inputType,
+        record,
+        index,
+        children,
+        ...restProps
+    }) => {
+        return (
+            <td {...restProps}>
+                {editing ? (
+                    <Form.Item
+                        name={dataIndex}
+                        validateStatus={
+                            this.state.errors[dataIndex] !== "" ? "error" : ""
+                        }
+                        help={
+                            this.state.errors[dataIndex] !== ""
+                                ? `* ${this.state.errors[dataIndex]}`
+                                : "*"
+                        }
+                    >
+                        {<Input name={dataIndex} onChange={this.onChange} />}
+                    </Form.Item>
+                ) : (
+                    children
+                )}
+            </td>
+        );
+    };
     render() {
-        const { searchText, searchedColumn } = this.state;
+        const formRef = this.formRef;
+        const { current: form } = formRef;
+        const { searchText, searchedColumn, editingKey } = this.state;
+        const { listStudent } = this.props;
         const { dispatch } = this.props;
         const setSearchText = (data) => {
             this.setState({
@@ -50,6 +132,34 @@ class ListStudent extends Component {
             this.setState({
                 searchedColumn: data,
             });
+        };
+        const setEditingKey = (data) => {
+            this.setState({
+                editingKey: data,
+            });
+        };
+        const isEditing = (record) => record.key === editingKey;
+        const edit = (record) => {
+            form.setFieldsValue({
+                id: "",
+                name: "",
+                phoneNumber: "",
+                email: "",
+                ...record,
+            });
+            setEditingKey(record.key);
+        };
+        const cancel = () => {
+            setEditingKey("");
+        };
+
+        const save = async (record) => {
+            const { id } = record;
+            let newData = await form.validateFields();
+            newData = { ...newData, id };
+            dispatch(editStudent(newData));
+            // await wait(1000);
+            setEditingKey("");
         };
 
         const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -166,7 +276,6 @@ class ListStudent extends Component {
                 ),
         });
 
-        const { listStudent } = this.props;
         const columns = [
             {
                 title: "ID",
@@ -179,31 +288,48 @@ class ListStudent extends Component {
                 title: "Họ tên",
                 dataIndex: "name",
                 ...getColumnSearchProps("name"),
+                editable: true,
             },
             {
                 title: "Số điện thoại",
                 dataIndex: "phoneNumber",
                 ...getColumnSearchProps("phoneNumber"),
                 sortDirections: ["descend", "ascend"],
+                editable: true,
             },
             {
                 title: "Email",
                 dataIndex: "email",
                 width: "20%",
                 ...getColumnSearchProps("email"),
+                editable: true,
             },
             {
                 title: "",
                 width: "10%",
                 render: (text, record, index) => {
-                    return (
+                    const editable = isEditing(record);
+                    return editable ? (
+                        <span>
+                            <Typography.Link
+                                onClick={() => save(record)}
+                                style={{
+                                    marginRight: 8,
+                                }}
+                            >
+                                Save
+                            </Typography.Link>
+                            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+                                <a>Cancel</a>
+                            </Popconfirm>
+                        </span>
+                    ) : (
                         <Space>
                             <Tooltip title="Chỉnh sửa">
                                 <Button
+                                    disabled={editingKey !== ""}
                                     icon={<EditOutlined />}
-                                    onClick={() => {
-                                        console.log(record.id);
-                                    }}
+                                    onClick={() => edit(record)}
                                 ></Button>
                             </Tooltip>
 
@@ -226,9 +352,34 @@ class ListStudent extends Component {
                 },
             },
         ];
+        const mergedColumns = columns.map((col) => {
+            console.log(col);
+            if (!col.editable) {
+                return col;
+            }
+            return {
+                ...col,
+                onCell: (record) => ({
+                    record,
+                    inputType: "text",
+                    dataIndex: col.dataIndex,
+                    title: col.title,
+                    editing: isEditing(record),
+                }),
+            };
+        });
         return (
-            <Form ref={this.formRef} component={false}>
-                <Table rowKey="id" columns={columns} dataSource={listStudent} />
+            <Form ref={formRef} component={false}>
+                <Table
+                    rowKey="id"
+                    columns={mergedColumns}
+                    dataSource={listStudent}
+                    components={{
+                        body: {
+                            cell: this.EditableCell,
+                        },
+                    }}
+                />
             </Form>
         );
     }
