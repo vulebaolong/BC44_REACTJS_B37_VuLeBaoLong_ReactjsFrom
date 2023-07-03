@@ -1,7 +1,7 @@
 import { Button, Card, Col, Form, Input, Row, Space, message } from "antd";
 import { connect } from "react-redux";
 import React, { Component } from "react";
-import { ContactsOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
+import { ContactsOutlined, MailOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { addStudent } from "../../redux/slices/studentSlice";
 import ToggleTheme from './../ToggleTheme/ToggleTheme';
 let messageApi = "";
@@ -253,7 +253,7 @@ class FormStudent extends Component {
                                             tabIndex="4"
                                             id="error"
                                             size="large"
-                                            prefix={<UserOutlined />}
+                                            prefix={<MailOutlined />}
                                             name="email"
                                             onChange={this.onChange}
                                             value={this.state.values.email}
