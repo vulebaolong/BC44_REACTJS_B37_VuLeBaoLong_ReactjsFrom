@@ -18,3 +18,18 @@
     background-color: rgba(100, 116, 139, 0.502);
 }
 /* SCROLLBAR - end */
+
+.ant-switch-inner-checked {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+
+.ant-switch-inner-unchecked{
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}

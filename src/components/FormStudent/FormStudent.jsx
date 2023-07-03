@@ -3,6 +3,7 @@ import { connect } from "react-redux";
 import React, { Component } from "react";
 import { ContactsOutlined, PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { addStudent } from "../../redux/slices/studentSlice";
+import ToggleTheme from './../ToggleTheme/ToggleTheme';
 let messageApi = "";
 const MessageWrapper = () => {
     const [getmessageApi, contextHolder] = message.useMessage();
@@ -147,11 +148,17 @@ class FormStudent extends Component {
         });
     };
     render() {
+        const renderTitle = () => { 
+            return <div style={{display:'flex', justifyContent:"space-between", alignItems:"center"}}>
+                <span>Thông tin Sinh Viên</span>
+                <ToggleTheme />
+            </div>
+         }
         return (
             <div>
                 <MessageWrapper />
                 <Card
-                    title="Thông tin sinh viên"
+                    title={renderTitle()}
                     bordered={false}
                     style={{ width: "100%" }}
                 >
